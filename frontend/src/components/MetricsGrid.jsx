@@ -2,7 +2,8 @@ const metricCards = [
   { key: 'totalSlots', label: 'Total Slots' },
   { key: 'availableSlots', label: 'Available Slots' },
   { key: 'occupiedSlots', label: 'Occupied Slots' },
-  { key: 'occupancyRate', label: 'Occupancy Rate', suffix: '%' }
+  { key: 'occupancyRate', label: 'Occupancy Rate', suffix: '%' },
+  { key: 'premiumSlotsAvailable', label: 'Premium Available' }
 ];
 
 export default function MetricsGrid({ summary }) {
@@ -18,10 +19,12 @@ export default function MetricsGrid({ summary }) {
         </article>
       ))}
       <article className="metric-card glass-card accent-card">
-        <p>Vehicle Allocation Mix</p>
+        <p>Allocation and Revenue</p>
         <div className="mini-stats">
           <span>Cars: {summary.carSlotsAvailable}</span>
           <span>Bikes: {summary.bikeSlotsAvailable}</span>
+          <span>EV Slots: {summary.evSlotsAvailable}</span>
+          <span>Revenue: LKR {summary.totalRevenue}</span>
         </div>
       </article>
     </section>

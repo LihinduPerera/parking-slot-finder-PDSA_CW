@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from './components/Header.jsx';
 import DriverPanel from './components/DriverPanel.jsx';
 import RecommendationCard from './components/RecommendationCard.jsx';
@@ -6,6 +6,8 @@ import MetricsGrid from './components/MetricsGrid.jsx';
 import ParkingMap from './components/ParkingMap.jsx';
 import SlotTable from './components/SlotTable.jsx';
 import ActivityFeed from './components/ActivityFeed.jsx';
+import LevelTabs from './components/LevelTabs.jsx';
+import VehicleHistoryPanel from './components/VehicleHistoryPanel.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -15,13 +17,16 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [globalMessage, setGlobalMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState(1);
+  const [vehicleHistory, setVehicleHistory] = useState([]);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (level = selectedLevel) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+      const response = await fetch(`${API_BASE_URL}/api/dashboard?level=${level}`);
       const data = await response.json();
       setDashboard(data);
+      setSelectedLevel(data.selectedLevel || level);
     } catch (error) {
       setGlobalMessage('Failed to connect to backend. Please start the server and refresh.');
     } finally {
@@ -30,18 +35,23 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchDashboard();
-  }, []);
+    fetchDashboard(selectedLevel);
+  }, [selectedLevel]);
 
   const handleRecommend = async (payload) => {
     setBusy(true);
     setGlobalMessage('');
 
     try {
+      const requestPayload = {
+        ...payload,
+        preferredCategory: payload.preferredCategory === 'any' ? undefined : payload.preferredCategory
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/recommend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(requestPayload)
       });
 
       const data = await response.json();
@@ -50,6 +60,7 @@ export default function App() {
       }
 
       setRecommendation(data);
+      setSelectedLevel(data.level || selectedLevel);
       setGlobalMessage(data.message);
     } catch (error) {
       setRecommendation(null);
@@ -78,7 +89,7 @@ export default function App() {
         throw new Error(data.message || 'Unable to confirm slot.');
       }
 
-      setDashboard(data.dashboard);
+      await fetchDashboard(selectedLevel);
       setGlobalMessage(data.message);
       setRecommendation((current) => current && { ...current, confirmed: true });
     } catch (error) {
@@ -102,7 +113,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error(data.message || 'Unable to update slot.');
       }
-      setDashboard(data.dashboard);
+      await fetchDashboard(selectedLevel);
       setGlobalMessage(data.message);
     } catch (error) {
       setGlobalMessage(error.message);
@@ -125,7 +136,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error(data.message || 'Unable to release slot.');
       }
-      setDashboard(data.dashboard);
+      await fetchDashboard(selectedLevel);
       setGlobalMessage(data.message);
       if (recommendation?.slotId === slotId) {
         setRecommendation(null);
@@ -149,8 +160,9 @@ export default function App() {
       if (!response.ok) {
         throw new Error(data.message || 'Unable to reset system.');
       }
-      setDashboard(data.dashboard);
+      await fetchDashboard(selectedLevel);
       setRecommendation(null);
+      setVehicleHistory([]);
       setGlobalMessage(data.message);
     } catch (error) {
       setGlobalMessage(error.message);
@@ -159,7 +171,49 @@ export default function App() {
     }
   };
 
-  const recommendedPath = useMemo(() => recommendation?.path || [], [recommendation]);
+  const handleSelectAlternative = (slotId) => {
+    if (!recommendation) {
+      return;
+    }
+
+    const selected = recommendation.alternatives?.find((option) => option.slotId === slotId);
+    if (!selected) {
+      return;
+    }
+
+    setRecommendation((current) => ({
+      ...current,
+      slotId: selected.slotId,
+      slotLabel: selected.slotLabel,
+      level: selected.level,
+      category: selected.category,
+      path: selected.path,
+      distance: selected.distance,
+      estimatedTimeMinutes: selected.estimatedTimeMinutes,
+      estimatedCost: selected.estimatedCost,
+      estimatedCostBreakdown: selected.estimatedCostBreakdown,
+      confirmed: false
+    }));
+  };
+
+  const handleVehicleSearch = async (vehicleNumber) => {
+    setBusy(true);
+    setGlobalMessage('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/vehicle/${vehicleNumber}/history`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Unable to load vehicle history.');
+      }
+      setVehicleHistory(data.history || []);
+      setGlobalMessage(`Loaded ${data.history?.length || 0} records for ${vehicleNumber}.`);
+    } catch (error) {
+      setGlobalMessage(error.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -183,10 +237,18 @@ export default function App() {
           <>
             <MetricsGrid summary={dashboard.summary} />
 
+            <LevelTabs
+              levels={dashboard.levels}
+              selectedLevel={selectedLevel}
+              onSelectLevel={setSelectedLevel}
+            />
+
             <section className="hero-grid">
               <DriverPanel
                 entrances={dashboard.entrances}
                 vehicleTypes={dashboard.vehicleTypes}
+                levels={dashboard.levels}
+                slotCategories={dashboard.slotCategories}
                 onRecommend={handleRecommend}
                 busy={busy}
               />
@@ -194,6 +256,7 @@ export default function App() {
                 recommendation={recommendation}
                 busy={busy}
                 onConfirm={handleConfirm}
+                onSelectAlternative={handleSelectAlternative}
               />
             </section>
 
@@ -201,10 +264,17 @@ export default function App() {
               <ParkingMap
                 map={dashboard.map}
                 slots={dashboard.slots}
-                recommendedPath={recommendedPath}
                 recommendation={recommendation}
               />
               <ActivityFeed history={dashboard.recentHistory} />
+            </section>
+
+            <section className="workspace-grid">
+              <VehicleHistoryPanel
+                onSearch={handleVehicleSearch}
+                history={vehicleHistory}
+                busy={busy}
+              />
             </section>
 
             <SlotTable

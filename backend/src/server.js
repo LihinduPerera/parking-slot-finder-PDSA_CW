@@ -12,8 +12,9 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Smart Parking backend is running.' });
 });
 
-app.get('/api/dashboard', (_req, res) => {
-  res.json(parkingService.getDashboard());
+app.get('/api/dashboard', (req, res) => {
+  const { level } = req.query;
+  res.json(parkingService.getDashboard({ level }));
 });
 
 app.get('/api/history', (_req, res) => {
@@ -30,6 +31,29 @@ app.post('/api/recommend', (req, res) => {
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
+});
+
+app.post('/api/parking-cost', (req, res) => {
+  try {
+    const { slotId, estimatedDurationMinutes } = req.body;
+    const result = parkingService.calculateParkingCost(slotId, estimatedDurationMinutes);
+    return res.json(result);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
+app.get('/api/map/levels', (_req, res) => {
+  res.json({ levels: parkingService.getLevelsOverview() });
+});
+
+app.get('/api/analytics/peak-hours', (_req, res) => {
+  res.json(parkingService.getPeakHoursAnalytics());
+});
+
+app.get('/api/vehicle/:vehicleNumber/history', (req, res) => {
+  const history = parkingService.getVehicleHistory(req.params.vehicleNumber);
+  res.json({ history });
 });
 
 app.post('/api/confirm', (req, res) => {

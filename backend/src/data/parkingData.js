@@ -1,49 +1,167 @@
-export const INITIAL_MAP = {
-  nodes: {
-    E1: { id: 'E1', label: 'Entrance 1', type: 'entrance', x: 60, y: 180 },
-    E2: { id: 'E2', label: 'Entrance 2', type: 'entrance', x: 60, y: 380 },
-    J1: { id: 'J1', label: 'Junction 1', type: 'junction', x: 220, y: 180 },
-    J2: { id: 'J2', label: 'Junction 2', type: 'junction', x: 220, y: 380 },
-    J3: { id: 'J3', label: 'Central Lane', type: 'junction', x: 420, y: 280 },
-    S1: { id: 'S1', label: 'Car A1', type: 'slot', slotType: 'car', x: 600, y: 80 },
-    S2: { id: 'S2', label: 'Car A2', type: 'slot', slotType: 'car', x: 760, y: 80 },
-    S3: { id: 'S3', label: 'Car B1', type: 'slot', slotType: 'car', x: 600, y: 190 },
-    S4: { id: 'S4', label: 'Car B2', type: 'slot', slotType: 'car', x: 760, y: 190 },
-    S5: { id: 'S5', label: 'Bike C1', type: 'slot', slotType: 'bike', x: 600, y: 320 },
-    S6: { id: 'S6', label: 'Bike C2', type: 'slot', slotType: 'bike', x: 760, y: 320 },
-    S7: { id: 'S7', label: 'Car D1', type: 'slot', slotType: 'car', x: 600, y: 450 },
-    S8: { id: 'S8', label: 'Car D2', type: 'slot', slotType: 'car', x: 760, y: 450 }
-  },
-  edges: [
-    { from: 'E1', to: 'J1', weight: 2 },
-    { from: 'E2', to: 'J2', weight: 2 },
-    { from: 'J1', to: 'J3', weight: 3 },
-    { from: 'J2', to: 'J3', weight: 3 },
-    { from: 'J3', to: 'S1', weight: 4 },
-    { from: 'J3', to: 'S2', weight: 5 },
-    { from: 'J3', to: 'S3', weight: 2 },
-    { from: 'J3', to: 'S4', weight: 3 },
-    { from: 'J3', to: 'S5', weight: 2 },
-    { from: 'J3', to: 'S6', weight: 3 },
-    { from: 'J3', to: 'S7', weight: 4 },
-    { from: 'J3', to: 'S8', weight: 5 }
-  ]
+const LEVELS = [1, 2, 3];
+const SLOT_TEMPLATE = [
+  { suffix: 'A1', type: 'car', category: 'premium', x: 600, y: 80 },
+  { suffix: 'A2', type: 'car', category: 'standard', x: 760, y: 80 },
+  { suffix: 'B1', type: 'car', category: 'standard', x: 600, y: 190 },
+  { suffix: 'B2', type: 'car', category: 'handicapped', x: 760, y: 190 },
+  { suffix: 'C1', type: 'bike', category: 'standard', x: 600, y: 320 },
+  { suffix: 'C2', type: 'bike', category: 'ev_charge', x: 760, y: 320 },
+  { suffix: 'D1', type: 'car', category: 'premium', x: 600, y: 450 },
+  { suffix: 'D2', type: 'car', category: 'standard', x: 760, y: 450 }
+];
+
+const PRICING_MODEL = {
+  standard: { baseRate: 120, perHour: 80 },
+  premium: { baseRate: 220, perHour: 120 },
+  handicapped: { baseRate: 70, perHour: 45 },
+  ev_charge: { baseRate: 140, perHour: 95 }
 };
 
-export const INITIAL_SLOTS = [
-  { id: 'S1', label: 'Car A1', type: 'car', status: 'available', currentVehicle: null },
-  { id: 'S2', label: 'Car A2', type: 'car', status: 'occupied', currentVehicle: 'CAX-9021' },
-  { id: 'S3', label: 'Car B1', type: 'car', status: 'available', currentVehicle: null },
-  { id: 'S4', label: 'Car B2', type: 'car', status: 'available', currentVehicle: null },
-  { id: 'S5', label: 'Bike C1', type: 'bike', status: 'available', currentVehicle: null },
-  { id: 'S6', label: 'Bike C2', type: 'bike', status: 'occupied', currentVehicle: 'BID-7711' },
-  { id: 'S7', label: 'Car D1', type: 'car', status: 'available', currentVehicle: null },
-  { id: 'S8', label: 'Car D2', type: 'car', status: 'occupied', currentVehicle: 'KDH-4478' }
-];
+const PRE_OCCUPIED = new Set(['L1_S_A2', 'L1_S_C2', 'L2_S_B1', 'L3_S_D2']);
 
-export const ENTRANCES = [
-  { id: 'E1', label: 'Entrance 1' },
-  { id: 'E2', label: 'Entrance 2' }
-];
+function levelNodeId(level, suffix) {
+  return `L${level}_${suffix}`;
+}
+
+function buildLevelNodes(level) {
+  const nodes = {
+    [levelNodeId(level, 'E1')]: {
+      id: levelNodeId(level, 'E1'),
+      label: `L${level} Entrance 1`,
+      type: 'entrance',
+      level,
+      x: 60,
+      y: 180
+    },
+    [levelNodeId(level, 'E2')]: {
+      id: levelNodeId(level, 'E2'),
+      label: `L${level} Entrance 2`,
+      type: 'entrance',
+      level,
+      x: 60,
+      y: 380
+    },
+    [levelNodeId(level, 'J1')]: {
+      id: levelNodeId(level, 'J1'),
+      label: `L${level} Junction 1`,
+      type: 'junction',
+      level,
+      x: 220,
+      y: 180
+    },
+    [levelNodeId(level, 'J2')]: {
+      id: levelNodeId(level, 'J2'),
+      label: `L${level} Junction 2`,
+      type: 'junction',
+      level,
+      x: 220,
+      y: 380
+    },
+    [levelNodeId(level, 'J3')]: {
+      id: levelNodeId(level, 'J3'),
+      label: `L${level} Central Lane`,
+      type: 'junction',
+      level,
+      x: 420,
+      y: 280
+    }
+  };
+
+  SLOT_TEMPLATE.forEach((slot) => {
+    const id = levelNodeId(level, `S_${slot.suffix}`);
+    nodes[id] = {
+      id,
+      label: `L${level} ${slot.type === 'car' ? 'Car' : 'Bike'} ${slot.suffix}`,
+      type: 'slot',
+      slotType: slot.type,
+      category: slot.category,
+      level,
+      x: slot.x,
+      y: slot.y
+    };
+  });
+
+  return nodes;
+}
+
+function buildLevelEdges(level) {
+  const edges = [
+    { from: levelNodeId(level, 'E1'), to: levelNodeId(level, 'J1'), weight: 2 },
+    { from: levelNodeId(level, 'E2'), to: levelNodeId(level, 'J2'), weight: 2 },
+    { from: levelNodeId(level, 'J1'), to: levelNodeId(level, 'J3'), weight: 3 },
+    { from: levelNodeId(level, 'J2'), to: levelNodeId(level, 'J3'), weight: 3 }
+  ];
+
+  SLOT_TEMPLATE.forEach((slot, index) => {
+    edges.push({
+      from: levelNodeId(level, 'J3'),
+      to: levelNodeId(level, `S_${slot.suffix}`),
+      weight: 2 + (index % 4)
+    });
+  });
+
+  return edges;
+}
+
+function buildAllNodes() {
+  return LEVELS.reduce((acc, level) => ({ ...acc, ...buildLevelNodes(level) }), {});
+}
+
+function buildAllEdges() {
+  const edges = LEVELS.flatMap((level) => buildLevelEdges(level));
+
+  // Connect levels using an elevator/stair-like central lane bridge.
+  for (let level = 1; level < LEVELS.length; level += 1) {
+    edges.push({
+      from: levelNodeId(level, 'J3'),
+      to: levelNodeId(level + 1, 'J3'),
+      weight: 4
+    });
+  }
+
+  return edges;
+}
+
+function buildInitialSlots() {
+  const slots = [];
+
+  LEVELS.forEach((level) => {
+    SLOT_TEMPLATE.forEach((slot, index) => {
+      const id = levelNodeId(level, `S_${slot.suffix}`);
+      const occupied = PRE_OCCUPIED.has(id);
+      const seededVehicle = occupied ? `${slot.type === 'car' ? 'CAR' : 'BIK'}-${level}${index + 1}94` : null;
+
+      slots.push({
+        id,
+        label: `L${level} ${slot.type === 'car' ? 'Car' : 'Bike'} ${slot.suffix}`,
+        level,
+        type: slot.type,
+        category: slot.category,
+        status: occupied ? 'occupied' : 'available',
+        currentVehicle: seededVehicle,
+        pricing: PRICING_MODEL[slot.category],
+        assignedAt: occupied ? new Date(Date.now() - 1000 * 60 * (20 + level * 10 + index * 3)).toISOString() : null
+      });
+    });
+  });
+
+  return slots;
+}
+
+export const INITIAL_MAP = {
+  levels: LEVELS,
+  nodes: buildAllNodes(),
+  edges: buildAllEdges()
+};
+
+export const INITIAL_SLOTS = buildInitialSlots();
+
+export const ENTRANCES = LEVELS.flatMap((level) => [
+  { id: levelNodeId(level, 'E1'), label: `Level ${level} - Entrance 1`, level },
+  { id: levelNodeId(level, 'E2'), label: `Level ${level} - Entrance 2`, level }
+]);
 
 export const VEHICLE_TYPES = ['car', 'bike'];
+export const SLOT_CATEGORIES = ['standard', 'premium', 'handicapped', 'ev_charge'];
+export const DEFAULT_LEVEL = 1;
+export const COST_CURRENCY = 'LKR';

@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
+
 :root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Space Grotesk", "Manrope", "Segoe UI", sans-serif;
   color: #edf4ff;
   background: #07111f;
   color-scheme: dark;
@@ -70,8 +72,8 @@ select {
   background: rgba(10, 20, 36, 0.72);
   border: 1px solid rgba(151, 177, 255, 0.18);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
   border-radius: 24px;
 }
 
@@ -237,6 +239,41 @@ button:hover:not(:disabled) {
   padding: 24px;
 }
 
+.level-tabs-card {
+  margin-top: 18px;
+  padding: 20px;
+}
+
+.panel-header.compact {
+  margin-bottom: 12px;
+}
+
+.level-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.level-tab {
+  border: 1px solid rgba(160, 186, 255, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #dfe8ff;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  text-align: left;
+}
+
+.level-tab.active {
+  background: linear-gradient(145deg, rgba(52, 144, 255, 0.35), rgba(36, 72, 158, 0.25));
+  border-color: rgba(96, 195, 255, 0.6);
+}
+
+.level-tab small {
+  color: #acc7ed;
+}
+
 .panel-header {
   display: flex;
   justify-content: space-between;
@@ -328,6 +365,11 @@ input::placeholder {
   color: #a9c2e6;
 }
 
+.recommendation-note {
+  margin-top: 10px;
+  color: #ffd890;
+}
+
 .slot-badge {
   border-radius: 999px;
   padding: 12px 16px;
@@ -361,6 +403,57 @@ input::placeholder {
   margin: 18px 0;
 }
 
+.alternatives-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.alt-option {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #dbe8ff;
+  text-align: left;
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.alt-option.active {
+  border-color: rgba(80, 182, 255, 0.7);
+  background: rgba(80, 182, 255, 0.14);
+}
+
+.alt-option small {
+  color: #9eb8db;
+}
+
+.cost-breakdown {
+  border-radius: 16px;
+  border: 1px solid rgba(127, 161, 223, 0.2);
+  background: rgba(8, 23, 44, 0.72);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cost-row small {
+  color: #9ab4d8;
+}
+
+.cost-row.total {
+  border-top: 1px dashed rgba(255, 255, 255, 0.2);
+  padding-top: 8px;
+}
+
 .legend-row {
   display: flex;
   gap: 14px;
@@ -380,6 +473,8 @@ input::placeholder {
 .legend-green { background: #49f6a1; }
 .legend-red { background: #ff617c; }
 .legend-blue { background: #50b6ff; }
+.legend-orange { background: #ffbc66; }
+.legend-cyan { background: #66fff0; }
 
 .parking-map {
   width: 100%;
@@ -396,8 +491,22 @@ input::placeholder {
 }
 
 .active-edge {
+  stroke-width: 8;
+}
+
+.route-primary {
   stroke: #48b7ff;
   filter: drop-shadow(0 0 10px rgba(72, 183, 255, 0.7));
+}
+
+.route-secondary {
+  stroke: #ffbc66;
+  filter: drop-shadow(0 0 10px rgba(255, 188, 102, 0.65));
+}
+
+.route-tertiary {
+  stroke: #66fff0;
+  filter: drop-shadow(0 0 10px rgba(102, 255, 240, 0.65));
 }
 
 .edge-weight {
@@ -524,6 +633,51 @@ th {
   flex-wrap: wrap;
 }
 
+.category-pill {
+  text-transform: capitalize;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(120, 178, 255, 0.18);
+  color: #cae3ff;
+}
+
+.history-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.history-list {
+  max-height: 280px;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.history-item p {
+  margin: 4px 0 0;
+  color: #9cb8de;
+}
+
+.history-item span {
+  color: #8dffe5;
+  font-weight: 700;
+}
+
+.muted {
+  color: #95afcf;
+}
+
 .loading-panel {
   margin-top: 20px;
   display: grid;
@@ -560,6 +714,10 @@ th {
 
   .header-actions {
     align-items: flex-start;
+  }
+
+  .level-tabs {
+    grid-template-columns: 1fr;
   }
 }
 

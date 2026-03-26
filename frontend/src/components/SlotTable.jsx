@@ -1,4 +1,6 @@
 export default function SlotTable({ slots, onSetOccupied, onSetAvailable, onRelease, busy }) {
+  const sortedSlots = slots.slice().sort((a, b) => a.level - b.level || a.label.localeCompare(b.label));
+
   return (
     <section className="glass-card table-card">
       <div className="panel-header">
@@ -13,17 +15,25 @@ export default function SlotTable({ slots, onSetOccupied, onSetAvailable, onRele
           <thead>
             <tr>
               <th>Slot</th>
+              <th>Level</th>
               <th>Type</th>
+              <th>Category</th>
+              <th>Rate / hr</th>
               <th>Status</th>
               <th>Current Vehicle</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {slots.map((slot) => (
+            {sortedSlots.map((slot) => (
               <tr key={slot.id}>
                 <td>{slot.label}</td>
+                <td>L{slot.level}</td>
                 <td>{slot.type.toUpperCase()}</td>
+                <td>
+                  <span className="category-pill">{slot.category.replace('_', ' ')}</span>
+                </td>
+                <td>LKR {slot.pricing.perHour}</td>
                 <td>
                   <span className={`table-status ${slot.status === 'available' ? 'status-available' : 'status-occupied'}`}>
                     {slot.status}
