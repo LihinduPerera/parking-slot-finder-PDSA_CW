@@ -21,6 +21,23 @@ The core computational problem is:
 
 This is solved using Dijkstra's algorithm with a min-heap priority queue.
 
+### Algorithms Used (Quick List)
+
+- Dijkstra's shortest path algorithm: used to find the minimum-distance route from entrance to each candidate slot in a weighted graph.
+- Adjacency list construction: used to store graph neighbors efficiently so traversal checks only connected nodes.
+- Path reconstruction using parent pointers: used to rebuild the actual route after shortest distances are computed.
+- Top-k nearest slot ranking (sort and select): used to return the best few alternatives (for example top 3) instead of only one slot.
+- Filtering, grouping, and aggregation for reports: used to enforce slot constraints and generate occupancy/performance summaries.
+
+### Data Structures Used (Quick List)
+
+- Array: used for ordered collections of slots, edges, history logs, and UI lists that need iteration and sorting.
+- Object (hash-map style): used for fast key-based lookup such as node data, distances, previous pointers, and pricing.
+- Set: used for uniqueness and fast membership checks (for example occupied slot IDs and unique CSV headers).
+- Map: used for dynamic key-value tracking such as highlighted route edges in visualization.
+- Weighted undirected graph (adjacency list representation): used because parking lanes are connected paths with measurable travel costs.
+- MinHeap (priority queue): used in Dijkstra to quickly get the next node with smallest tentative distance.
+
 ---
 
 ## 3. Main DSA Components Used
