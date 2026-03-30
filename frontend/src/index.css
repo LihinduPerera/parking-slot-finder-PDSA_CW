@@ -434,22 +434,59 @@ button, input, select { font: inherit; }
   width: fit-content;
 }
 
-.level-tab {
-  padding: 8px 32px;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: var(--color-on-surface-variant);
-  font-family: var(--font-ui);
-  font-size: .75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  cursor: pointer;
-  transition: background .2s, color .2s;
+.level-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
 }
-.level-tab:hover:not(.active) { background: var(--color-surface-container-high); color: var(--color-on-surface); }
-.level-tab.active { background: var(--color-primary-container); color: var(--color-on-primary); font-weight: 700; }
+
+.level-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(80, 69, 50, 0.1);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all .2s;
+  min-width: 140px;
+}
+
+.level-tab strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.level-tab small {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 400;
+}
+
+.level-tab:hover:not(.active) { 
+  background: var(--color-surface-container-high); 
+  border-color: rgba(80, 69, 50, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.level-tab.active { 
+  background: var(--color-primary-container); 
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 4px 12px rgba(255, 191, 0, 0.2);
+}
+
+.level-tab.active strong,
+.level-tab.active small {
+  color: var(--color-on-primary);
+}
 
 /* ─── DASHBOARD GRID ─────────────────────────────────────────────────────── */
 /* 4 col left / 8 col right — mirrors the HTML's lg:grid-cols-12 */
@@ -474,6 +511,39 @@ button, input, select { font: inherit; }
   border-radius: 12px;
   border: 1px solid rgba(80, 69, 50, 0.1);
   padding: 28px;
+}
+
+/* ─── FEATURE LIST ────────────────────────────────────────────────────────── */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(80, 69, 50, 0.1);
+}
+
+.feature-list > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+}
+
+.feature-list > div span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 191, 0, 0.15);
+  color: var(--color-primary-container);
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 .panel-header {
@@ -506,7 +576,7 @@ button, input, select { font: inherit; }
   text-transform: uppercase;
   letter-spacing: .2em;
   color: var(--color-primary-container);
-  margin: 0;
+  margin: 0 0 8px 0;
 }
 
 /* ─── FORMS ──────────────────────────────────────────────────────────────── */
