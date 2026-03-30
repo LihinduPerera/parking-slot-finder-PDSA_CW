@@ -355,6 +355,116 @@ class ParkingService {
 
     return slot;
   }
+
+  generateReport(reportType) {
+  console.log('NEW generateReport running for:', reportType);
+  const timestamp = new Date().toISOString();
+  const summary = this.getSummary();
+  const levels = this.getLevelsOverview();
+
+  const activeVehicles = this.slots.filter(
+    (slot) => slot.status === 'occupied' && slot.currentVehicle
+  ).length;
+
+  const processedVehicles = this.vehicleHistory.length;
+  const totalVehicleSessions = activeVehicles + processedVehicles;
+
+  const safeRate = (occupied, total) =>
+    total > 0 ? Number(((occupied / total) * 100).toFixed(1)) : 0;
+
+  const metadata = {
+    generatedAt: timestamp,
+    generatedBy: 'Smart Parking Slot Finder',
+    systemStatus: 'online',
+    currency: COST_CURRENCY
+  };
+
+  if (reportType === 'daily') {
+    return {
+      type: 'daily',
+      debugVersion: 'NEW-REPORT-V2',
+      reportName: 'Daily Parking Summary Report',
+      ...metadata,
+      summary,
+      totals: {
+        activeVehicles,
+        processedVehicles,
+        totalVehicleSessions,
+        totalRevenue: this.totalRevenue
+      },
+      topOccupiedLevels: levels
+        .slice()
+        .sort((a, b) => b.occupied - a.occupied)
+        .slice(0, 3),
+      recentActivity: this.history.slice(-20)
+    };
+  }
+
+  if (reportType === 'occupancy') {
+    return {
+      type: 'occupancy',
+      reportName: 'Occupancy Analysis Report',
+      ...metadata,
+      summary,
+      byLevel: levels.map((level) => ({
+        ...level,
+        occupancyRate: safeRate(level.occupied, level.total)
+      })),
+      byCategory: SLOT_CATEGORIES.map((category) => {
+        const slots = this.slots.filter((s) => s.category === category);
+        const total = slots.length;
+        const available = slots.filter((s) => s.status === 'available').length;
+        const occupied = total - available;
+
+        return {
+          category,
+          total,
+          available,
+          occupied,
+          occupancyRate: safeRate(occupied, total)
+        };
+      }),
+      byType: ['car', 'bike'].map((type) => {
+        const slots = this.slots.filter((s) => s.type === type);
+        const total = slots.length;
+        const available = slots.filter((s) => s.status === 'available').length;
+        const occupied = total - available;
+
+        return {
+          type,
+          total,
+          available,
+          occupied,
+          occupancyRate: safeRate(occupied, total)
+        };
+      })
+    };
+  }
+
+  if (reportType === 'activity') {
+    return {
+      type: 'activity',
+      reportName: 'System Activity Report',
+      ...metadata,
+      totals: {
+        totalEvents: this.history.length,
+        activeVehicles,
+        processedVehicles,
+        totalVehicleSessions
+      },
+      events: this.history.map((event) => ({
+        ...event,
+        timestamp: event.timestamp
+      })),
+      vehicleHistory: this.vehicleHistory.map((vh) => ({
+        ...vh,
+        estimatedCost: vh.totalCost
+      }))
+    };
+  }
+
+  throw new Error(`Unknown report type: ${reportType}`);
+  }
 }
 
 export const parkingService = new ParkingService();
