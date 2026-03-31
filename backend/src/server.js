@@ -91,6 +91,16 @@ app.post('/api/reset', (_req, res) => {
   res.json({ message: 'System reset to demo state.', dashboard: parkingService.getDashboard() });
 });
 
+app.get('/api/reports/:reportType', (req, res) => {
+  try {
+    const { reportType } = req.params;
+    const report = parkingService.generateReport(reportType);
+    res.json(report);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+});
+
 app.use((_req, res) => {
   res.status(404).json({ message: 'Endpoint not found.' });
 });
